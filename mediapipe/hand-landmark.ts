@@ -13,6 +13,7 @@ import {
     HandLandmarkerOptions,
     HandLandmarkerResults,
     NormalizedLandmark,
+    FilesetResolver,
 } from "@mediapipe/tasks-vision";
 import {
     BufferGeometry,
@@ -45,7 +46,7 @@ export type ConnectionData = {
 
 const HandLandmarkDetection = (() => {
     const MODEL_URL: string =
-        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.tflite";
+        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task";
 
     const CONFIG_MIN_DETECTION_CONFIDENCE: number = 0;
     const CONFIG_MAX_DETECTION_CONFIDENCE: number = 1;

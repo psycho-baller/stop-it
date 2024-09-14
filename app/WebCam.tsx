@@ -17,9 +17,9 @@ import { Separator } from "@/components/ui/separator";
 import Drawing3d from "@/lib/Drawing3d";
 import FaceDetection from "@/mediapipe/face-detection";
 import FaceLandmarkDetection from "@/mediapipe/face-landmark";
+import HandLandmarkDetection from "@/mediapipe/hand-landmark";
 // import NailBitingDetection from "@/mediapipe/face-touching";
 import GestureRecognition from "@/mediapipe/gesture-recognition";
-// import HandLandmarkDetection from "@/mediapile/hand-landmark";
 import initMediaPipVision from "@/mediapipe/mediapipe-vision";
 import ObjectDetection from "@/mediapipe/object-detection";
 import { CameraDevicesContext } from "@/providers/CameraDevicesProvider";
@@ -51,6 +51,7 @@ import {
 import { Rings } from "react-loader-spinner";
 import Webcam from "react-webcam";
 import { toast } from "sonner";
+import { NormalizedLandmark } from "@mediapipe/tasks-vision";
 
 type Props = {};
 
@@ -100,7 +101,7 @@ const Home = (props: Props) => {
                 FaceDetection.initModel(vision),
                 GestureRecognition.initModel(vision),
                 FaceLandmarkDetection.initModel(vision),
-                // HandLandmarkDetection.initModel(vision),
+                HandLandmarkDetection.initModel(vision),
             ];
 
             const results = await Promise.all(models);
@@ -128,11 +129,41 @@ const Home = (props: Props) => {
         }
     };
 
+
+    const getMouthRegion = (faceLandmarks: NormalizedLandmark[][]) => {
+        // Assuming the mouth region is defined by specific landmarks
+        // You need to adjust the indices based on the actual landmarks used by your model
+        const mouthLandmarks = faceLandmarks[0].slice(61, 81); // Example indices for mouth region
+        return mouthLandmarks;
+    };
+
+    const isHandInMouthRegion = (
+        handLandmarks: NormalizedLandmark[][],
+        mouthRegion: NormalizedLandmark[]
+    ) => {
+        // Check if any hand landmark is within the mouth region
+        for (const hand of handLandmarks) {
+            for (const handPoint of hand) {
+                for (const mouthPoint of mouthRegion) {
+                    const distance = Math.sqrt(
+                        Math.pow(handPoint.x - mouthPoint.x, 2) +
+                        Math.pow(handPoint.y - mouthPoint.y, 2) +
+                        Math.pow(handPoint.z - mouthPoint.z, 2)
+                    );
+
+                    if (distance < 0.05) { // Adjust the threshold as needed
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    };
+
+
     const runPrediction = () => {
         if (
-            webcamRef.current &&
-            webcamRef.current.video &&
-            webcamRef.current.video.readyState === 4
+            webcamRef?.current?.video?.readyState === 4
         ) {
             if (
                 currentMode === OBJ_DETECTION_MODE &&
@@ -229,9 +260,47 @@ const Home = (props: Props) => {
                         );
                     }
                 }
-            } else if (currentMode === HAND_LANDMARK_DETECTION_MODE) {
-                console.log("No mode selected");
-            }
+            } else if (currentMode === HAND_LANDMARK_DETECTION_MODE
+                && !HandLandmarkDetection.isModelUpdating()) {
+                    const handLandmarkPrediction = HandLandmarkDetection.detectHand(
+                        webcamRef.current.video
+                    );
+    
+                    if (handLandmarkPrediction) {
+                        const canvas = canvas3dRef.current;
+                        const video = webcamRef.current?.video;
+    
+                        if (canvas && video) {
+                            const { videoWidth, videoHeight } = video;
+                            Drawing3d.resizeCamera(videoWidth, videoHeight);
+    
+                            HandLandmarkDetection.draw(
+                                mirrored,
+                                handLandmarkPrediction,
+                                videoWidth,
+                                videoHeight
+                            );
+    
+                            // Check if hand is in the mouth region
+                            const faceLandmarkPrediction = FaceLandmarkDetection.detectFace(
+                                webcamRef.current.video
+                            );
+    
+                            if (faceLandmarkPrediction) {
+                                const mouthRegion = getMouthRegion(
+                                    faceLandmarkPrediction.faceLandmarks
+                                );
+    
+                                if (isHandInMouthRegion(
+                                    handLandmarkPrediction.landmarks,
+                                    mouthRegion
+                                )) {
+                                    console.log("Hand is in the mouth region");
+                                }
+                            }
+                        }
+                    }
+                }
         }
     };
 
