@@ -12,7 +12,7 @@ export const generateFeedback = action({
 
     });
     const result = await llm.invoke(message, {
-      maxTokens: 10,
+      maxTokens: 5,
     });
     return result.content;
   },

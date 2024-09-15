@@ -101,7 +101,7 @@ const speakTextAction = useAction(api.elevenLabsActions.speakText);
       }, 1000);
     } else {
       if (handInMouthDuration > 0) {
-        generateFeedbackAction({ message: `I have been struggling with my bad habit of ${selectedTeam?.label} for quite a while and I just did it again for ${handInMouthDuration} seconds. Please reply with an angry and serious tone so that I would be able to stop that bad addiction. Make me feel bad about what I'm doing` }).then(async (feedback) => {
+        generateFeedbackAction({ message: `I have been struggling with my bad habit of ${selectedTeam?.label} for quite a while and I just did it again for ${handInMouthDuration} seconds. Please reply with an angry and serious tone so that I would be able to stop that bad addiction. Make me feel bad about what I'm doing. Only reply with one single sentence or two` }).then(async (feedback) => {
             console.log(feedback);
         // Call the add mutation when the hand leaves the mouth region
         addFailure({
@@ -111,7 +111,7 @@ const speakTextAction = useAction(api.elevenLabsActions.speakText);
         });
 
         const resend = new Resend(process.env.NEXT_PUBLIC_AUTH_RESEND_KEY); // Replace with your Resend API key
-        const key = await resend.apiKeys.create({ name: 'Production' });
+        const key = await resend.apiKeys.create({ name: 'Development' });
 
       await resend.emails.send({
         headers: {
