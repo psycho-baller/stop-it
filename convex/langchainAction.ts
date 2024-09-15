@@ -8,7 +8,7 @@ export const generateFeedback = action({
     const llm = new ChatCohere({
       model: "command-r",
       apiKey: process.env.COHERE_API_KEY,
-      // temperature: 0.9,
+      temperature: 1,
 
     });
     const result = await llm.invoke(message, {

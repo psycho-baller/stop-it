@@ -33,10 +33,10 @@ export function RecentSales() {
         const badHabit = badHabitMap.get(failure.badHabitId);
         return (
       <div key={failure._id} className="flex items-center w-full">
-        <Avatar className="h-9 w-9">
+        {/* <Avatar className="h-9 w-9">
           <AvatarImage src="/avatars/01.png" alt="Avatar" />
           <AvatarFallback>OM</AvatarFallback>
-        </Avatar>
+        </Avatar> */}
         <div className="ml-4 space-y-1">
           <p className="text-sm font-medium leading-none">{badHabit?.name}</p>
           <p className="text-sm text-muted-foreground">

@@ -33,6 +33,7 @@ import {
     FACE_LANDMARK_DETECTION_MODE,
     GESTURE_RECOGNITION_MODE,
     HAND_LANDMARK_DETECTION_MODE,
+    HAND_LANDMARK_DETECTION_STR,
     ModelLoadResult,
     NO_MODE,
     OBJ_DETECTION_MODE,
@@ -78,7 +79,7 @@ const Home = (props: Props) => {
     const [volume, setVolume] = useState<number>(0.8);
     const [modelLoadResult, setModelLoadResult] = useState<ModelLoadResult[]>();
     const [loading, setLoading] = useState<boolean>(false);
-    const [currentMode, setCurrentMode] = useState<number>(NO_MODE);
+    const [currentMode, setCurrentMode] = useState<number>(HAND_LANDMARK_DETECTION_MODE);
     const [animateDelay, setAnimateDelay] = useState<number | null>(150);
 
     const [isHandInMouth, setIsHandInMouth] = useState(false);
@@ -110,20 +111,25 @@ const speakTextAction = useAction(api.elevenLabsActions.speakText);
         });
 
         const resend = new Resend(process.env.NEXT_PUBLIC_AUTH_RESEND_KEY); // Replace with your Resend API key
+        const key = await resend.apiKeys.create({ name: 'Production' });
+
       await resend.emails.send({
+        headers: {
+            'X-Api-Key': key.data ?? '',
+        },
         from: 'ramim66809@gmail.com', // Replace with your email
         to: emailList || [],
         subject: 'Bad Habit Alert',
         text: feedback as string,
         react: <>
-            <h1>Bad Habit Alert</h1>
+            <h1>Bad Habit Alert!</h1>
             <p>{feedback as string}</p>
         </>
       });
 
         // speakTextAction({ text: feedback as string });
-        const client = new ElevenLabsClient({ apiKey: "sk_e80493c8a5632f537598568a622dc896cba4c8d16aae426" });
-const response = await client.textToSpeech.convert("FbYWQmQRr6mS5EQQdVnT", {
+        const client = new ElevenLabsClient({ apiKey: process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY });
+const response = await client.textToSpeech.convert("SiXLYbY3dWAmuakcT7nY", {
     optimize_streaming_latency: ElevenLabs.OptimizeStreamingLatency.Zero,
     output_format: ElevenLabs.OutputFormat.Mp32205032,
     text: feedback as string,
@@ -138,7 +144,7 @@ const response = await client.textToSpeech.convert("FbYWQmQRr6mS5EQQdVnT", {
 //   text: 'Hello! 你好! Hola! नमस्ते! Bonjour! こんにちは! مرحبا! 안녕하세요! Ciao! Cześć! Привіт! வணக்கம்!',
 //   model_id: 'eleven_multilingual_v2',
 // });
-await play(response)
+// await play(response)
         setHandInMouthDuration(0);
     });
         }
@@ -182,9 +188,9 @@ handleHandInMouth();
             const results = await Promise.all(models);
             const enabledModels = results.filter((result) => result.loadResult);
 
-            if (enabledModels.length > 0) {
-                setCurrentMode(enabledModels[0].mode);
-            }
+            // if (enabledModels.length > 0) {
+            //     setCurrentMode(enabledModels[0].mode);
+            // }
             setModelLoadResult(enabledModels);
         }
     };
@@ -340,7 +346,7 @@ handleHandInMouth();
             } else if (currentMode === HAND_LANDMARK_DETECTION_MODE
             && !HandLandmarkDetection.isModelUpdating()) {
                 const handLandmarkPrediction = HandLandmarkDetection.detectHand(
-                    webcamRef.current.video
+                    webcamRef?.current?.video
                 );
 
                 if (handLandmarkPrediction) {
@@ -454,7 +460,7 @@ handleHandInMouth();
     return (
         <div
         // className="flex flex-col h-screen w-screen items-center"
-        className="hidden"
+        className="invisible w-1 h-1"
         
         >
             {/* Camera area */}
