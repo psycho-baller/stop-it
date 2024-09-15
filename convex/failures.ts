@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal} from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 
 export const getFailures = query({
   args: {},
@@ -18,15 +20,26 @@ export const getFailures = query({
 });
 
 export const add = mutation({
-  args: { feedback: v.string(), badHabitId: v.id('badHabits'), duration: v.number() },
+  args: { badHabit: v.object({
+    label: v.string(),
+    value: v.string(),
+  }), duration: v.number() },
   handler: async (ctx, data) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       throw new Error("Not signed in");
     }
+    
+    const feedback: string = await ctx.scheduler.runAfter(0, internal.langchainAction.generateFeedback, {
+      message: `I have been struggling with my bad habit of ${data.badHabit.label} for quite a while and I just did it again for ${data.duration} seconds.`,
+  })
+    console.log(feedback)
     await ctx.db.insert("failures", {
-      ...data,
+      badHabitId: data.badHabit.value as Id<"badHabits">,
+      duration: data.duration,
       userId,
+      feedback,
     });
+    return feedback
   },
 });

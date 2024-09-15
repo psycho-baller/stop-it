@@ -51,12 +51,13 @@ import { Rings } from "react-loader-spinner";
 import Webcam from "react-webcam";
 import { toast } from "sonner";
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import { useMutation } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 import { selectedTeamAtom } from "@/lib/atoms"
 import { useAtom } from "jotai/react"
+import { generateFeedback } from "@/convex/langchainAction";
 
 type Props = {};
 
@@ -83,26 +84,32 @@ const Home = (props: Props) => {
   const [handInMouthDuration, setHandInMouthDuration] = useState(0);
   const [selectedTeam, setSelectedTeam] = useAtom(selectedTeamAtom);
   const addFailure = useMutation(api.failures.add);
+// const generateFeedbackAction = useAction(generateFeedback);
+const speakTextAction = useAction(api.elevenLabsActions.speakText);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if (isHandInMouth) {
-      interval = setInterval(() => {
-        setHandInMouthDuration((prev) => prev + 1);
-      }, 1000);
-    } else {
-      if (handInMouthDuration > 0) {
-        // Call the add mutation when the hand leaves the mouth region
-        addFailure({
-          feedback: `Hand was in mouth for ${handInMouthDuration} seconds`,
-          badHabitId: selectedTeam!.value as Id<'badHabits'>,
-          duration: handInMouthDuration,
-        });
-        setHandInMouthDuration(0);
-      }
-    }
+    const handleHandInMouth = async () => {
+        if (isHandInMouth) {
+          interval = setInterval(() => {
+            setHandInMouthDuration((prev) => prev + 1);
+          }, 1000);
+        } else {
+          if (handInMouthDuration > 0) {
+            // Call the add mutation when the hand leaves the mouth region
+            const feedback = await addFailure({
+              badHabit: selectedTeam,
+              duration: handInMouthDuration,
+            });
+            console.log("feedback", feedback);
+            await speakTextAction({ text: feedback });
+            setHandInMouthDuration(0);
+          }
+        }
+      };
 
+      handleHandInMouth();
     return () => clearInterval(interval);
   }, [isHandInMouth, handInMouthDuration, addFailure]);
 
@@ -170,20 +177,23 @@ const Home = (props: Props) => {
 
     const isHandInMouthRegion = (
         handLandmarks: NormalizedLandmark[][],
-        mouthRegion: NormalizedLandmark[]
+        mouthRegion: NormalizedLandmark[] | undefined
     ) => {
         // Check if any hand landmark is within the mouth region
         for (const hand of handLandmarks) {
             for (const handPoint of hand) {
-                for (const mouthPoint of mouthRegion) {
-                    const distance = Math.sqrt(
-                        Math.pow(handPoint.x - mouthPoint.x, 2) +
-                        Math.pow(handPoint.y - mouthPoint.y, 2) +
-                        Math.pow(handPoint.z - mouthPoint.z, 2)
-                    );
-
-                    if (distance < 0.05) { // Adjust the threshold as needed
-                        return true;
+                if (mouthRegion) {
+                    for (const mouthPoint of mouthRegion) {
+                        // Your code here
+                        const distance = Math.sqrt(
+                            Math.pow(handPoint.x - mouthPoint.x, 2) +
+                            Math.pow(handPoint.y - mouthPoint.y, 2) +
+                            Math.pow(handPoint.z - mouthPoint.z, 2)
+                        );
+                        
+                        if (distance < 0.05) { // Adjust the threshold as needed
+                            return true;
+                        }
                     }
                 }
             }
