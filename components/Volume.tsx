@@ -6,7 +6,7 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "./ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Slider } from "./ui/slider";
+import { Slider } from "@/components/ui/slider";
 
 type Props = {
     cameraStatus: number | undefined;
