@@ -2,22 +2,27 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 
-export const speakText = action({
+import { ElevenLabsClient, ElevenLabs, play } from "elevenlabs";
+
+export  const speakText = action({
   args: { text: v.string() },
   handler: async (ctx, { text }) => {
-    const response = await fetch("https://api.elevenlabs.io/v1/text-to-speech", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "xi-api-key": "YOUR_ELEVENLABS_API_KEY",
-      },
-      body: JSON.stringify({
-        text,
-        voice: "en_us_male",
-      }),
-    });
-
-    const data = await response.json();
-    return data.audio_url;
-  },
+    const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY });
+// const response = await client.textToSpeech.convert("FbYWQmQRr6mS5EQQdVnT", {
+//     optimize_streaming_latency: ElevenLabs.OptimizeStreamingLatency.Zero,
+//     output_format: ElevenLabs.OutputFormat.Mp32205032,
+//     text,
+//     voice_settings: {
+//         stability: 0.1,
+//         similarity_boost: 0.3,
+//         style: 0.2,
+//     }
+// });
+const response = await client.generate({
+  voice: 'Rachel',
+  text: 'Hello! 你好! Hola! नमस्ते! Bonjour! こんにちは! مرحبا! 안녕하세요! Ciao! Cześć! Привіт! வணக்கம்!',
+  model_id: 'eleven_multilingual_v2',
+});
+await play(response)
+  }
 });

@@ -51,13 +51,14 @@ import { Rings } from "react-loader-spinner";
 import Webcam from "react-webcam";
 import { toast } from "sonner";
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import { useAction, useMutation } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 import { selectedTeamAtom } from "@/lib/atoms"
 import { useAtom } from "jotai/react"
-import { generateFeedback } from "@/convex/langchainAction";
+import { ElevenLabsClient, ElevenLabs, play } from "elevenlabs";
+import {Resend} from "resend";
 
 type Props = {};
 
@@ -84,32 +85,67 @@ const Home = (props: Props) => {
   const [handInMouthDuration, setHandInMouthDuration] = useState(0);
   const [selectedTeam, setSelectedTeam] = useAtom(selectedTeamAtom);
   const addFailure = useMutation(api.failures.add);
-// const generateFeedbackAction = useAction(generateFeedback);
+  const emailList = useQuery(api.settings.getNotificationEmails);
+const generateFeedbackAction = useAction(api.langchainAction.generateFeedback);
 const speakTextAction = useAction(api.elevenLabsActions.speakText);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    const handleHandInMouth = async () => {
-        if (isHandInMouth) {
-          interval = setInterval(() => {
-            setHandInMouthDuration((prev) => prev + 1);
-          }, 1000);
-        } else {
-          if (handInMouthDuration > 0) {
-            // Call the add mutation when the hand leaves the mouth region
-            const feedback = await addFailure({
-              badHabit: selectedTeam,
-              duration: handInMouthDuration,
-            });
-            console.log("feedback", feedback);
-            await speakTextAction({ text: feedback });
-            setHandInMouthDuration(0);
-          }
-        }
-      };
 
-      handleHandInMouth();
+    const handleHandInMouth = async () => {
+    if (isHandInMouth) {
+      interval = setInterval(() => {
+        setHandInMouthDuration((prev) => prev + 1);
+      }, 1000);
+    } else {
+      if (handInMouthDuration > 0) {
+        generateFeedbackAction({ message: `I have been struggling with my bad habit of ${selectedTeam?.label} for quite a while and I just did it again for ${handInMouthDuration} seconds. Please reply with an angry and serious tone so that I would be able to stop that bad addiction. Make me feel bad about what I'm doing` }).then(async (feedback) => {
+            console.log(feedback);
+        // Call the add mutation when the hand leaves the mouth region
+        addFailure({
+          feedback: feedback as string,
+          badHabitId: selectedTeam!.value as Id<'badHabits'>,
+          duration: handInMouthDuration,
+        });
+
+        const resend = new Resend(process.env.NEXT_PUBLIC_AUTH_RESEND_KEY); // Replace with your Resend API key
+      await resend.emails.send({
+        from: 'ramim66809@gmail.com', // Replace with your email
+        to: emailList || [],
+        subject: 'Bad Habit Alert',
+        text: feedback as string,
+        react: <>
+            <h1>Bad Habit Alert</h1>
+            <p>{feedback as string}</p>
+        </>
+      });
+
+        // speakTextAction({ text: feedback as string });
+        const client = new ElevenLabsClient({ apiKey: "sk_e80493c8a5632f537598568a622dc896cba4c8d16aae426" });
+const response = await client.textToSpeech.convert("FbYWQmQRr6mS5EQQdVnT", {
+    optimize_streaming_latency: ElevenLabs.OptimizeStreamingLatency.Zero,
+    output_format: ElevenLabs.OutputFormat.Mp32205032,
+    text: feedback as string,
+    voice_settings: {
+        stability: 0.1,
+        similarity_boost: 0.3,
+        style: 0.2,
+    }
+});
+// const response = await client.generate({
+//   voice: 'Rachel',
+//   text: 'Hello! 你好! Hola! नमस्ते! Bonjour! こんにちは! مرحبا! 안녕하세요! Ciao! Cześć! Привіт! வணக்கம்!',
+//   model_id: 'eleven_multilingual_v2',
+// });
+await play(response)
+        setHandInMouthDuration(0);
+    });
+        }
+    }
+};
+
+handleHandInMouth();
     return () => clearInterval(interval);
   }, [isHandInMouth, handInMouthDuration, addFailure]);
 
@@ -416,7 +452,11 @@ const speakTextAction = useAction(api.elevenLabsActions.speakText);
     useInterval({ callback: runPrediction, delay: animateDelay });
 
     return (
-        <div className="flex flex-col h-screen w-screen items-center">
+        <div
+        // className="flex flex-col h-screen w-screen items-center"
+        className="hidden"
+        
+        >
             {/* Camera area */}
             <div
                 className={clsx(
@@ -424,7 +464,9 @@ const speakTextAction = useAction(api.elevenLabsActions.speakText);
                     "border-primary/5 border-2 max-h-xs"
                 )}
             >
-                <div className="flex relative w-full h-full">
+                <div
+                className="flex relative w-full h-full"
+                >
                     {cameraDeviceProvider?.status.status ===
                         CAMERA_LOAD_STATUS_SUCCESS &&
                     cameraDeviceProvider?.webcamId ? (

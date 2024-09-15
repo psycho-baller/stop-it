@@ -8,6 +8,7 @@ import BadHabitSelector from "./BadHabitSelector";
 import Camera from "./Camera";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { RecentSales } from "./recent-sales";
+import { Overview } from "./Chart";
 export default async function ProductPage() {
   const viewer = await fetchQuery(
     api.users.viewer,
@@ -22,17 +23,31 @@ export default async function ProductPage() {
         <UserMenu>{viewer.name}</UserMenu>
       </div>
         <Camera />
-        <Card className="col-span-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                <Card className="col-span-4">
+                  <CardHeader>
+                    <CardTitle>Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pl-2">
+                    <Overview />
+                  </CardContent>
+                </Card>
+                <Card className="col-span-3">
                   <CardHeader>
                     <CardTitle>Recent Failures</CardTitle>
                     <CardDescription>
-                      You repeated the same bad habit 26 times in the last 7 days.
+                      A list of your recent failures
                     </CardDescription>
+                    {/* on the right corner */}
+                    <div className="flex ml-auto">
+                      time spent doing it
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <RecentSales />
                   </CardContent>
                 </Card>
+                </div>
       {/* <Chat viewer={viewer._id} /> */}
     </main>
   );
