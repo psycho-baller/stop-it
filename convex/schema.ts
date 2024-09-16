@@ -25,9 +25,10 @@ export default defineSchema({
     userId: v.id('users'), // Reference to the user
     name: v.string(),
     description: v.string(), // Optional description for custom habits
+    enabled: v.optional(v.boolean()), // True if the habit is enabled
+    notifyEnabled: v.optional(v.boolean()), // True if notifications are enabled
     detectionType: v.string(), // 'nailBiting', 'faceTouching', etc.
     isCustom: v.boolean(), // True if it's a custom habit
-    notifyEnabled: v.boolean(), // Whether to send notifications
     notifyEmails: v.array(v.string())
   }),
   failures: defineTable({

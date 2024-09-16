@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/avatar"
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { formatCreationTime } from "@/lib/utils";
 
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) {
@@ -38,10 +39,12 @@ export function RecentSales() {
           <AvatarFallback>OM</AvatarFallback>
         </Avatar> */}
         <div className="ml-4 space-y-1">
-          <p className="text-sm font-medium leading-none">{badHabit?.name}</p>
-          <p className="text-sm text-muted-foreground">
-            {truncateText(failure.feedback, 50)}
+          <p className="text-sm font-medium leading-none">
+          {truncateText(failure.feedback, 50)}
           </p>
+          <p className="text-sm font-thin">{formatCreationTime(badHabit?._creationTime)}</p>
+          {/* <p className="text-sm text-muted-foreground">
+          </p> */}
         </div>
         <div className="ml-auto font-medium">{failure.duration} seconds</div>
       </div>

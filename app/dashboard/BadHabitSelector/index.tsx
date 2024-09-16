@@ -63,6 +63,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
   const [open, setOpen] = React.useState(false)
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
   const [selectedTeam, setSelectedTeam] = useAtom(selectedTeamAtom)
+  const [detectionType, setDetectionType] = React.useState("")
   const badHabits = useQuery(api.badHabits.getBadHabits)
   const addBadHabit = useMutation(api.badHabits.add)
 
@@ -80,7 +81,8 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
     const formData = new FormData(event.target as HTMLFormElement)
     const name = formData.get("name") as string
     const description = formData.get("description") as string
-    const detectionType = formData.get("detectionType") as string
+    // const detectionType = formData.get("detectionType") as string
+
     const isCustom = formData.get("isCustom") === "on"
     const notifyEnabled = formData.get("notifyEnabled") === "on"
     const notifyEmails = (formData.get("notifyEmails") as string).split(",")
@@ -92,6 +94,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
       isCustom,
       notifyEnabled,
       notifyEmails,
+      enabled: true,
     })
 
     setShowNewTeamDialog(false)
@@ -126,9 +129,9 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           <Command>
-            <CommandInput placeholder="Search team..." />
+            <CommandInput placeholder="Search bad habit..." />
             <CommandList>
-              <CommandEmpty>No team found.</CommandEmpty>
+              <CommandEmpty>No bad habit found.</CommandEmpty>
               {badHabits.map((badHabit) => (
                 // <CommandGroup key={group._id} heading={group.name}>
                   // {group.map((team: Team) => (
@@ -176,7 +179,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                     }}
                   >
                     <PlusCircledIcon className="mr-2 h-5 w-5" />
-                    Create Team
+                    Create New Bad Habit
                   </CommandItem>
                 </DialogTrigger>
               </CommandGroup>
@@ -186,9 +189,9 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
       </Popover>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create team</DialogTitle>
+          <DialogTitle>Create bad habit</DialogTitle>
           <DialogDescription>
-            Add a new team to manage products and customers.
+            Create a new bad habit to track your progress.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -201,21 +204,15 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
               <Label htmlFor="description">Description</Label>
               <Input id="description" name="description" placeholder="Description" required />
             </div>
-            <div className="space-y-2">
+            <div className="-mb-2">
               <Label htmlFor="detectionType">Detection Type</Label>
-              <Input id="detectionType" name="detectionType" placeholder="Detection Type" required />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="isCustom">Is Custom</Label>
-              <Input id="isCustom" name="isCustom" type="checkbox" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notifyEnabled">Notify Enabled</Label>
-              <Input id="notifyEnabled" name="notifyEnabled" type="checkbox" />
-            </div>
+            
+            
+            
             <div className="space-y-2">
               <Label htmlFor="notifyEmails">Notify Emails</Label>
-              <Input id="notifyEmails" name="notifyEmails" placeholder="email1@example.com,email2@example.com" required />
+              <Input id="notifyEmails" name="notifyEmails" placeholder="email1@example.com,email2@example.com" />
             </div>
           </div>
           <DialogFooter>

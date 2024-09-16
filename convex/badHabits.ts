@@ -32,7 +32,7 @@ export const getBadHabit = query({
 
 
 export const add = mutation({
-  args: { name: v.string(), description: v.string(), detectionType: v.string(), isCustom: v.boolean(), notifyEnabled: v.boolean(), notifyEmails: v.array(v.string()) },
+  args: { name: v.string(), description: v.string(), enabled: v.boolean(), detectionType: v.string(), isCustom: v.boolean(), notifyEmails: v.array(v.string()), notifyEnabled: v.boolean() },
   handler: async (ctx, data) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) {

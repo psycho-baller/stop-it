@@ -22,6 +22,7 @@ import type * as elevenLabsActions from "../elevenLabsActions.js";
 import type * as failures from "../failures.js";
 import type * as http from "../http.js";
 import type * as langchainAction from "../langchainAction.js";
+import type * as resendAction from "../resendAction.js";
 import type * as settings from "../settings.js";
 import type * as users from "../users.js";
 
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   failures: typeof failures;
   http: typeof http;
   langchainAction: typeof langchainAction;
+  resendAction: typeof resendAction;
   settings: typeof settings;
   users: typeof users;
 }>;
