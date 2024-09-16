@@ -23,6 +23,13 @@ const response = await client.generate({
   text: 'Hello! 你好! Hola! नमस्ते! Bonjour! こんにちは! مرحبا! 안녕하세요! Ciao! Cześć! Привіт! வணக்கம்!',
   model_id: 'eleven_multilingual_v2',
 });
-await play(response)
+
+const chunks = [];
+for await (const chunk of response) {
+  chunks.push(chunk);
+}
+
+const audioBuffer = Buffer.concat(chunks);
+return audioBuffer.toString('base64');
   }
 });

@@ -23,6 +23,7 @@ import initMediaPipVision from "@/mediapipe/mediapipe-vision";
 import ObjectDetection from "@/mediapipe/object-detection";
 import { CameraDevicesContext } from "@/providers/CameraDevicesProvider";
 import { beep } from "@/utils/audio";
+import { useTextToVoice } from "react-speakup";
 import {
     CAMERA_LOAD_STATUS_ERROR,
     CAMERA_LOAD_STATUS_NO_DEVICES,
@@ -60,6 +61,7 @@ import { selectedTeamAtom } from "@/lib/atoms"
 import { useAtom } from "jotai/react"
 import { ElevenLabsClient, ElevenLabs, play } from "elevenlabs";
 import {Resend} from "resend";
+import { ReadStream } from "fs";
 
 type Props = {};
 
@@ -89,7 +91,9 @@ const Home = (props: Props) => {
   const emailList = useQuery(api.settings.getNotificationEmails);
 const generateFeedbackAction = useAction(api.langchainAction.generateFeedback);
 const speakTextAction = useAction(api.elevenLabsActions.speakText);
-
+const sendEmail = useAction(api.resendAction.sendEmail);
+const { speak, pause, resume, ref, setVoice, voices, isSpeaking } = useTextToVoice<HTMLDivElement>();
+const [feedback, setFeedback] = useState<string | null>(null);
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -101,50 +105,91 @@ const speakTextAction = useAction(api.elevenLabsActions.speakText);
       }, 1000);
     } else {
       if (handInMouthDuration > 0) {
-        generateFeedbackAction({ message: `I have been struggling with my bad habit of ${selectedTeam?.label} for quite a while and I just did it again for ${handInMouthDuration} seconds. Please reply with an angry and serious tone so that I would be able to stop that bad addiction. Make me feel bad about what I'm doing. Only reply with one single sentence or two` }).then(async (feedback) => {
+        const currentDuration = handInMouthDuration;
+        generateFeedbackAction({ message: `I have been struggling with my bad habit of ${selectedTeam?.label} for quite a while. and I just did it again for ${handInMouthDuration} seconds. Please reply with an angry and serious tone so that I would be able to stop that bad addiction. Make me feel bad about what I'm doing. Only reply with one single sentence or two` }).then(async (feedback) => {
             console.log(feedback);
+            setVoice(voices[0]);
+        // console.log("isSpeaking: ", isSpeaking);
+            setFeedback(feedback as string);
+        speak()
+        resume()
+        // console.log("isSpeaking: ", isSpeaking);
         // Call the add mutation when the hand leaves the mouth region
         addFailure({
           feedback: feedback as string,
           badHabitId: selectedTeam!.value as Id<'badHabits'>,
-          duration: handInMouthDuration,
+          duration: currentDuration,
         });
 
-        const resend = new Resend(process.env.NEXT_PUBLIC_AUTH_RESEND_KEY); // Replace with your Resend API key
-        const key = await resend.apiKeys.create({ name: 'Development' });
+        sendEmail({
+            emailList: emailList || [],
+            message: "I am ashamed to say that I have done it again."
+        });
 
-      await resend.emails.send({
-        headers: {
-            'X-Api-Key': key.data ?? '',
-        },
-        from: 'ramim66809@gmail.com', // Replace with your email
-        to: emailList || [],
-        subject: 'Bad Habit Alert',
-        text: feedback as string,
-        react: <>
-            <h1>Bad Habit Alert!</h1>
-            <p>{feedback as string}</p>
-        </>
-      });
+        // const key = await resend.apiKeys.create({ name: 'Development' });
 
         // speakTextAction({ text: feedback as string });
-        const client = new ElevenLabsClient({ apiKey: process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY });
-const response = await client.textToSpeech.convert("SiXLYbY3dWAmuakcT7nY", {
-    optimize_streaming_latency: ElevenLabs.OptimizeStreamingLatency.Zero,
-    output_format: ElevenLabs.OutputFormat.Mp32205032,
-    text: feedback as string,
-    voice_settings: {
-        stability: 0.1,
-        similarity_boost: 0.3,
-        style: 0.2,
-    }
-});
+        const readStreamToArrayBuffer = async (stream: Readable): Promise<ArrayBuffer> => {
+            const reader = stream.getReader();
+            const chunks = [];
+            let done, value;
+          
+            while (!done) {
+              ({ done, value } = await reader.read());
+              if (value) {
+                chunks.push(value);
+              }
+            }
+          
+            const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+            const arrayBuffer = new Uint8Array(totalLength);
+            let offset = 0;
+          
+            for (const chunk of chunks) {
+              arrayBuffer.set(chunk, offset);
+              offset += chunk.length;
+            }
+          
+            return arrayBuffer.buffer;
+          };
+//         const client = new ElevenLabsClient({ apiKey: process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY });
+// const response = await client.textToSpeech.convert("SiXLYbY3dWAmuakcT7nY", {
+//     optimize_streaming_latency: ElevenLabs.OptimizeStreamingLatency.Zero,
+//     output_format: ElevenLabs.OutputFormat.Mp32205032,
+//     text: feedback as string,
+//     voice_settings: {
+//         stability: 0.1,
+//         similarity_boost: 0.3,
+//         style: 0.2,
+//     }
+// });
+// const audioBuffer = await readStreamToArrayBuffer(response);
+
+// const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+//     const buffer = await audioContext.decodeAudioData(audioBuffer);
+
+//     const source = audioContext.createBufferSource();
+//     source.buffer = buffer;
+//     source.connect(audioContext.destination);
+//     source.start(0);
+
 // const response = await client.generate({
 //   voice: 'Rachel',
 //   text: 'Hello! 你好! Hola! नमस्ते! Bonjour! こんにちは! مرحبا! 안녕하세요! Ciao! Cześć! Привіт! வணக்கம்!',
 //   model_id: 'eleven_multilingual_v2',
 // });
-// await play(response)
+// const base64Audio = await speakTextAction({ text: feedback as string });
+// const audioBuffer = Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0)).buffer;
+
+//     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+//     const buffer = await audioContext.decodeAudioData(audioBuffer);
+
+//     const source = audioContext.createBufferSource();
+//     source.buffer = buffer;
+//     source.connect(audioContext.destination);
+//     source.start(0);
+// var player = new talkify.TtsPlayer(); //or new talkify.Html5Player()
+// player.playText('Hello world');
         setHandInMouthDuration(0);
     });
         }
@@ -463,6 +508,9 @@ handleHandInMouth();
         className="invisible w-1 h-1"
         
         >
+            <div ref={ref} className="">
+                hi bye
+            </div>
             {/* Camera area */}
             <div
                 className={clsx(
