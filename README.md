@@ -1,58 +1,28 @@
-# Welcome to your Convex + Next.js + Convex Auth app
+## Inspiration
+I have seen people around me, including myself, fall prey to minor negative behaviors because we think it's not a big problem. In reality, the effects compound, and your reinforcement continues to overpower your efforts to overcome it.
+One personal bad habit that I picked up was pulling my mustache, which is essentially very similar to biting your nails. Back When I used to live with my family I would always find my sister biting her nails and it somewhat disgusted me. Funny enough, a few years later, I started playing with and pulling my mustache and it continued to get worse. Now it is wasting so much of my time and I couldn't find any way to overcome it other than building this app
 
-This is a [Convex](https://convex.dev/) project created with [`npm create convex`](https://www.npmjs.com/package/create-convex).
+## What it does
+Empower users to be more mindful of their actions by having their laptop camera monitor them and alert them when they commit a bad habit/addiction they have configured in the web app.
 
-After the initial setup (<2 minutes) you'll have a working full-stack app using:
+## How I built it
+With the motivation of helping myself. Saving me around 30 minutes every day. I also believe it's a pain point in other people's lives as well.
+Used convex as a backend to store user's data and to enable the ability to have friends to expose your bad habits to.
+Implemented several 'Actions' that I used for several external APIs that I used like cohere, Elevenlabs, and resend. I also found the process very smooth with adding an auth system with Convex Auth. I'm a big fan of tRPC so I'm glad y'all took inspiration from them and made Convex also end-to-end type-safe.
 
-- Convex as your backend (database, server logic)
-- [Convex Auth](https://labs.convex.dev/auth) for your authentication implementation
-- [React](https://react.dev/) as your frontend (web page interactivity)
-- [Next.js](https://nextjs.org/) for optimized web hosting and page routing
-- [Tailwind](https://tailwindcss.com/) and [shadcn/ui](https://ui.shadcn.com/) for building great looking accessible UI fast
 
-## Get started
+## Challenges I ran into
+Convex's way of doing things. Nothing can beat a stack you've already worked with before. Especially if you want speed.
 
-If you just cloned this codebase and didn't use `npm create convex`, run:
+## Accomplishments that I'm proud of
+Unfortunately, I worked solo but managed to get into the flow, got a lot done, and enjoyed myself in that process.
 
-```
-npm install
-npm run dev
-```
+## What I learned
+Image Recognition in the Web
+Convex backend
+The value of having teammates in hackathons. Makes it a whole another experience compared to hacking solo.
 
-If you're reading this README on GitHub and want to use this template, run:
-
-```
-npm create convex@latest -- -t nextjs-convexauth-shadcn
-```
-
-## The app
-
-The app is a basic multi-user chat. Walkthrough of the source code:
-
-- [convex/auth.ts](./convex/auth.ts) configures the available authentication methods
-- [convex/messages.ts](./convex/messages.ts) is the chat backend implementation
-- [middleware.ts](./middleware.ts) determines which pages require sign-in
-- [app/layout.tsx](./app/layout.tsx) is the main app layout
-- [app/(splash)/page.tsx](<./app/(splash)/page.tsx>) is the splash page (doesn't require sign-in)
-- [app/dashboard/layout.tsx](./app/dashboard/layout.tsx) is the "product" layout for the [product page](./app/dashboard/page.tsx) (requires sign-in)
-- [app/signin/page.tsx](./app/signin/page.tsx) is the sign-in page
-- [app/dashboard/Chat/Chat.tsx](./app/dashboard/Chat/Chat.tsx) is the chat frontend
-
-## Configuring other authentication methods
-
-To configure different authentication methods, see [Configuration](https://labs.convex.dev/auth/config) in the Convex Auth docs.
-
-## Learn more
-
-To learn more about developing your project with Convex, check out:
-
-- The [Tour of Convex](https://docs.convex.dev/get-started) for a thorough introduction to Convex principles.
-- The rest of [Convex docs](https://docs.convex.dev/) to learn about all Convex features.
-- [Stack](https://stack.convex.dev/) for in-depth articles on advanced topics.
-
-## Join the community
-
-Join thousands of developers building full-stack apps with Convex:
-
-- Join the [Convex Discord community](https://convex.dev/community) to get help in real-time.
-- Follow [Convex on GitHub](https://github.com/get-convex/), star and contribute to the open-source implementation of Convex.
+## What's next for StopIt!
+You can follow other people who you trust them in knowing your bad habits
+A team of habit breakers who put some money in. Whoever loses will have to give out the money among the other breakers
+Gamifying
