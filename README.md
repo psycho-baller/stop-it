@@ -1,5 +1,5 @@
 # Devpost
-Hack The North 2024 devpost submission
+Hack The North 2024 [devpost submission](https://devpost.com/software/stopit-7o15k6)
 ## Inspiration
 I have seen people around me, including myself, fall prey to minor negative behaviors because we think it's not a big problem. In reality, the effects compound, and your reinforcement continues to overpower your efforts to overcome it.
 One personal bad habit that I picked up was pulling my mustache, which is essentially very similar to biting your nails. Back When I used to live with my family I would always find my sister biting her nails and it somewhat disgusted me. Funny enough, a few years later, I started playing with and pulling my mustache and it continued to get worse. Now it is wasting so much of my time and I couldn't find any way to overcome it other than building this app
